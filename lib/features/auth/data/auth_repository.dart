@@ -61,7 +61,7 @@ class AuthRepository {
         .maybeSingle();
 
     if (profile == null) {
-      final name = user.userMetadata?['display_name'] as String? ?? 'Usuario';
+      final name = user.userMetadata?['display_name'] as String? ?? user.email?.split('@').first ?? 'NEXO';
       await _client.from('profiles').insert({
         'id': user.id,
         'display_name': name,
@@ -90,7 +90,7 @@ class AuthRepository {
           .maybeSingle();
 
       if (profile == null) {
-        final name = user.userMetadata?['display_name'] as String? ?? 'Usuario';
+        final name = user.userMetadata?['display_name'] as String? ?? user.email?.split('@').first ?? 'NEXO';
         await _client.from('profiles').insert({
           'id': user.id,
           'display_name': name,

@@ -57,11 +57,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           child: Column(
             children: [
               const Spacer(flex: 2),
-              Text(
-                'NEXO',
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      letterSpacing: 8,
-                    ),
+              Image.asset(
+                'assets/logo.png',
+                height: 80,
               ),
               const Spacer(flex: 1),
               TextField(
