@@ -1,13 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:nexo/core/theme/app_colors.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
+      backgroundColor: AppColors.background,
       body: Center(
-        child: CircularProgressIndicator(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'NEXO',
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    color: AppColors.textPrimary,
+                    letterSpacing: 8,
+                  ),
+            ),
+            const SizedBox(height: 48),
+            SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

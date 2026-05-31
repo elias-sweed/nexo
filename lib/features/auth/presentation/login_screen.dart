@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nexo/core/theme/app_colors.dart';
+import '../../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -24,57 +26,72 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
+    final gold = Theme.of(context).extension<AppThemeExtension>()!.gold;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Iniciar sesión')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Correo electrónico',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(
-                labelText: 'Contraseña',
-                border: OutlineInputBorder(),
-              ),
-              obscureText: true,
-            ),
-            if (authState.error != null) ...[
-              const SizedBox(height: 8),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            children: [
+              const Spacer(flex: 2),
               Text(
-                authState.error!,
-                style: const TextStyle(color: Colors.red),
+                'NEXO',
+                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                      letterSpacing: 8,
+                    ),
               ),
+              const Spacer(flex: 1),
+              TextField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Correo electrónico',
+                ),
+                keyboardType: TextInputType.emailAddress,
+                style: const TextStyle(color: AppColors.textPrimary),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _passwordController,
+                decoration: const InputDecoration(
+                  labelText: 'Contraseña',
+                ),
+                obscureText: true,
+                style: const TextStyle(color: AppColors.textPrimary),
+              ),
+              if (authState.error != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  authState.error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    ref.read(authStateProvider.notifier).signIn(
+                          _emailController.text.trim(),
+                          _passwordController.text,
+                        );
+                  },
+                  child: const Text('Iniciar sesión'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () => context.push('/register'),
+                child: Text(
+                  'Crear cuenta',
+                  style: TextStyle(color: gold),
+                ),
+              ),
+              const Spacer(flex: 2),
             ],
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  ref.read(authStateProvider.notifier).signIn(
-                        _emailController.text.trim(),
-                        _passwordController.text,
-                      );
-                },
-                child: const Text('Iniciar sesión'),
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () => context.push('/register'),
-              child: const Text('Crear cuenta'),
-            ),
-          ],
+          ),
         ),
       ),
     );

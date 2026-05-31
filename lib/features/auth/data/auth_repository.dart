@@ -54,38 +54,59 @@ class AuthRepository {
       throw Exception('Credenciales inválidas');
     }
 
-    final profile = await _client
+    var profile = await _client
         .from('profiles')
         .select('display_name, avatar_url')
         .eq('id', user.id)
         .maybeSingle();
+
+    if (profile == null) {
+      final name = user.userMetadata?['display_name'] as String? ?? 'Usuario';
+      await _client.from('profiles').insert({
+        'id': user.id,
+        'display_name': name,
+      });
+      profile = <String, dynamic>{'display_name': name, 'avatar_url': null};
+    }
 
     return AppUser(
       id: user.id,
       email: user.email ?? email,
-      displayName: profile?['display_name'] as String?,
-      avatarUrl: profile?['avatar_url'] as String?,
+      displayName: profile['display_name'] as String?,
+      avatarUrl: profile['avatar_url'] as String?,
     );
   }
 
   Future<AppUser?> getCurrentUser() async {
-    final session = _client.auth.currentSession;
-    if (session == null) return null;
+    try {
+      final response = await _client.auth.getUser();
+      final user = response.user;
+      if (user == null) return null;
 
-    final user = session.user;
+      var profile = await _client
+          .from('profiles')
+          .select('display_name, avatar_url')
+          .eq('id', user.id)
+          .maybeSingle();
 
-    final profile = await _client
-        .from('profiles')
-        .select('display_name, avatar_url')
-        .eq('id', user.id)
-        .maybeSingle();
+      if (profile == null) {
+        final name = user.userMetadata?['display_name'] as String? ?? 'Usuario';
+        await _client.from('profiles').insert({
+          'id': user.id,
+          'display_name': name,
+        });
+        profile = <String, dynamic>{'display_name': name, 'avatar_url': null};
+      }
 
-    return AppUser(
-      id: user.id,
-      email: user.email ?? '',
-      displayName: profile?['display_name'] as String?,
-      avatarUrl: profile?['avatar_url'] as String?,
-    );
+      return AppUser(
+        id: user.id,
+        email: user.email ?? '',
+        displayName: profile['display_name'] as String?,
+        avatarUrl: profile['avatar_url'] as String?,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> signOut() async {

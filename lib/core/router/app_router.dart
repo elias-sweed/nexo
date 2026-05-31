@@ -4,26 +4,29 @@ import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/couple/presentation/create_couple_screen.dart';
+import '../../features/couple/presentation/join_couple_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
-  final router = GoRouter(
+  final authState = ref.watch(authStateProvider);
+
+  return GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
-      final authState = ref.read(authStateProvider);
       final location = state.matchedLocation;
 
       if (authState.status == AuthStatus.initial) return null;
 
-      final isOnAuthPage = location == '/login' || location == '/register';
+      final isAuthPage = location == '/login' || location == '/register';
       final isSplash = location == '/splash';
 
       if (authState.isAuthenticated) {
-        if (isOnAuthPage || isSplash) return '/home';
+        if (isAuthPage || isSplash) return '/home';
         return null;
       }
 
-      if (isOnAuthPage) return null;
+      if (isAuthPage) return null;
       return '/login';
     },
     routes: [
@@ -43,12 +46,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/home',
         builder: (_, __) => const HomeScreen(),
       ),
+      GoRoute(
+        path: '/create-couple',
+        builder: (_, __) => const CreateCoupleScreen(),
+      ),
+      GoRoute(
+        path: '/join-couple',
+        builder: (_, __) => const JoinCoupleScreen(),
+      ),
     ],
   );
-
-  ref.listen(authStateProvider, (_, __) {
-    router.refresh();
-  });
-
-  return router;
 });
