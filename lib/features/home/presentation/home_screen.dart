@@ -2,22 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nexo/core/theme/app_colors.dart';
-import '../../../core/theme/app_theme.dart';
+import 'package:nexo/core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../couple/presentation/connected_screen.dart';
 import '../../couple/presentation/pending_screen.dart';
 import '../../couple/providers/couple_provider.dart';
+import '../../journal/presentation/journal_screen.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  int _currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
-    final coupleAsync = ref.watch(currentCoupleProvider);
-    final pendingAsync = ref.watch(pendingCodeProvider);
-    final gold = Theme.of(context).extension<AppThemeExtension>()!.gold;
     final user = authState.user;
+    final gold = Theme.of(context).extension<AppThemeExtension>()!.gold;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -27,27 +33,125 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: Icon(Icons.logout, color: gold),
             onPressed: () {
-              ref.read(authStateProvider.notifier).signOut();
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: AppColors.surface,
+                  title: const Text('Cerrar sesión'),
+                  content: const Text('¿Estás seguro de que quieres salir?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: Text('Cancelar', style: TextStyle(color: gold)),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        ref.read(authStateProvider.notifier).signOut();
+                      },
+                      child: const Text('Salir'),
+                    ),
+                  ],
+                ),
+              );
             },
           ),
         ],
       ),
-      body: coupleAsync.when(
-        data: (couple) {
-          if (couple != null) return const ConnectedScreen();
-          return pendingAsync.when(
-            data: (code) {
-              if (code != null) return PendingScreen(inviteCode: code);
-              return _NoCoupleView(gold: gold);
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) => const Center(child: Text('Error')),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => const Center(child: Text('Error')),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: const [
+          _VinculoTab(),
+          _JournalTab(),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: AppColors.surface,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.textSecondary,
+        currentIndex: _currentIndex,
+        onTap: (i) => setState(() => _currentIndex = i),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite_border),
+            activeIcon: Icon(Icons.favorite),
+            label: 'Vínculo',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book_outlined),
+            activeIcon: Icon(Icons.book),
+            label: 'Diario',
+          ),
+        ],
       ),
     );
+  }
+}
+
+class _VinculoTab extends ConsumerWidget {
+  const _VinculoTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final coupleAsync = ref.watch(currentCoupleProvider);
+    final pendingAsync = ref.watch(pendingCodeProvider);
+    final gold = Theme.of(context).extension<AppThemeExtension>()!.gold;
+
+    return coupleAsync.when(
+      data: (couple) {
+        if (couple != null) return const ConnectedScreen();
+        return pendingAsync.when(
+          data: (code) {
+            if (code != null) return PendingScreen(inviteCode: code);
+            return _NoCoupleView(gold: gold);
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, __) => const Center(child: Text('Error')),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (_, __) => const Center(child: Text('Error')),
+    );
+  }
+}
+
+class _JournalTab extends ConsumerWidget {
+  const _JournalTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final couple = ref.watch(currentCoupleProvider).value;
+    final gold = Theme.of(context).extension<AppThemeExtension>()!.gold;
+
+    if (couple == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.book_outlined, size: 72, color: gold),
+              const SizedBox(height: 24),
+              Text(
+                'Primero conecta con tu pareja',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontSize: 20,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Ve a la pestaña Vínculo para crear o unirte a un vínculo',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return const JournalScreen();
   }
 }
 

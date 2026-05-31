@@ -6,6 +6,7 @@ import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/couple/presentation/create_couple_screen.dart';
 import '../../features/couple/presentation/join_couple_screen.dart';
+import '../../features/journal/presentation/create_entry_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -53,6 +54,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/join-couple',
         builder: (_, __) => const JoinCoupleScreen(),
+      ),
+      GoRoute(
+        path: '/journal/create',
+        builder: (_, __) => const CreateEntryScreen(),
       ),
     ],
   );
