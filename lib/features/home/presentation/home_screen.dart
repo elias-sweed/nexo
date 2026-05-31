@@ -8,6 +8,7 @@ import '../../couple/presentation/connected_screen.dart';
 import '../../couple/presentation/pending_screen.dart';
 import '../../couple/providers/couple_provider.dart';
 import '../../journal/presentation/journal_screen.dart';
+import '../../memories/presentation/memories_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -63,6 +64,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: const [
           _VinculoTab(),
           _JournalTab(),
+          _MemoriesTab(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -81,6 +83,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             icon: Icon(Icons.book_outlined),
             activeIcon: Icon(Icons.book),
             label: 'Diario',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.photo_library_outlined),
+            activeIcon: Icon(Icons.photo_library),
+            label: 'Recuerdos',
           ),
         ],
       ),
@@ -152,6 +159,46 @@ class _JournalTab extends ConsumerWidget {
     }
 
     return const JournalScreen();
+  }
+}
+
+class _MemoriesTab extends ConsumerWidget {
+  const _MemoriesTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final couple = ref.watch(currentCoupleProvider).value;
+    final gold = Theme.of(context).extension<AppThemeExtension>()!.gold;
+
+    if (couple == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.photo_library_outlined, size: 72, color: gold),
+              const SizedBox(height: 24),
+              Text(
+                'Primero conecta con tu pareja',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontSize: 20,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Ve a la pestaña Vínculo para crear o unirte a un vínculo',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return const MemoriesScreen();
   }
 }
 

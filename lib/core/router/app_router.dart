@@ -7,6 +7,8 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/couple/presentation/create_couple_screen.dart';
 import '../../features/couple/presentation/join_couple_screen.dart';
 import '../../features/journal/presentation/create_entry_screen.dart';
+import '../../features/memories/presentation/create_memory_screen.dart';
+import '../../features/memories/presentation/memory_detail_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -58,6 +60,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/journal/create',
         builder: (_, __) => const CreateEntryScreen(),
+      ),
+      GoRoute(
+        path: '/memories/create',
+        builder: (_, __) => const CreateMemoryScreen(),
+      ),
+      GoRoute(
+        path: '/memory/:id',
+        builder: (_, state) => MemoryDetailScreen(
+          id: state.pathParameters['id']!,
+        ),
       ),
     ],
   );
