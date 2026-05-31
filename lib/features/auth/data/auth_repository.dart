@@ -30,13 +30,13 @@ class AuthRepository {
         .from('profiles')
         .select('display_name, avatar_url')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
     return AppUser(
       id: user.id,
       email: user.email ?? email,
-      displayName: profile['display_name'] as String?,
-      avatarUrl: profile['avatar_url'] as String?,
+      displayName: profile?['display_name'] as String?,
+      avatarUrl: profile?['avatar_url'] as String?,
     );
   }
 
@@ -58,13 +58,13 @@ class AuthRepository {
         .from('profiles')
         .select('display_name, avatar_url')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
     return AppUser(
       id: user.id,
       email: user.email ?? email,
-      displayName: profile['display_name'] as String?,
-      avatarUrl: profile['avatar_url'] as String?,
+      displayName: profile?['display_name'] as String?,
+      avatarUrl: profile?['avatar_url'] as String?,
     );
   }
 
@@ -80,13 +80,11 @@ class AuthRepository {
         .eq('id', user.id)
         .maybeSingle();
 
-    if (profile == null) return null;
-
     return AppUser(
       id: user.id,
       email: user.email ?? '',
-      displayName: profile['display_name'] as String?,
-      avatarUrl: profile['avatar_url'] as String?,
+      displayName: profile?['display_name'] as String?,
+      avatarUrl: profile?['avatar_url'] as String?,
     );
   }
 

@@ -104,13 +104,16 @@ class AuthNotifier extends Notifier<AuthState> {
     if (msg.contains('Invalid login credentials')) {
       return 'Correo o contraseña incorrectos';
     }
+    if (msg.contains('Email not confirmed')) {
+      return 'Confirma tu correo antes de iniciar sesión';
+    }
     if (msg.contains('User already registered')) {
       return 'El correo ya está registrado';
     }
     if (msg.contains('Password should be')) {
       return 'La contraseña debe tener al menos 6 caracteres';
     }
-    return 'Ocurrió un error. Intenta de nuevo.';
+    return msg;
   }
 }
 

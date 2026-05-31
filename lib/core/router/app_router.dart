@@ -16,13 +16,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       if (authState.status == AuthStatus.initial) return null;
 
       final isOnAuthPage = location == '/login' || location == '/register';
+      final isSplash = location == '/splash';
 
-      if (authState.isAuthenticated && isOnAuthPage) return '/home';
-      if (!authState.isAuthenticated && location != '/splash' && !isOnAuthPage) {
-        return '/login';
+      if (authState.isAuthenticated) {
+        if (isOnAuthPage || isSplash) return '/home';
+        return null;
       }
 
-      return null;
+      if (isOnAuthPage) return null;
+      return '/login';
     },
     routes: [
       GoRoute(
