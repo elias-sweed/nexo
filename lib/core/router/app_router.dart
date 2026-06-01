@@ -12,9 +12,13 @@ import '../../features/memories/presentation/memory_detail_screen.dart';
 import '../../features/future_letters/presentation/create_future_letter_screen.dart';
 import '../../features/future_letters/presentation/letter_detail_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
+import '../../features/security/presentation/lock_screen.dart';
+import '../../features/security/presentation/security_settings_screen.dart';
+import '../../features/security/providers/lock_provider.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
+  final lockState = ref.watch(lockStateProvider);
 
   return GoRouter(
     initialLocation: '/splash',
@@ -25,9 +29,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       final isAuthPage = location == '/login' || location == '/register';
       final isSplash = location == '/splash';
-
+      
       if (authState.isAuthenticated) {
-        if (isAuthPage || isSplash) return '/home';
+        if (lockState == LockState.locked && location != '/lock') {
+          return '/lock';
+        }
+        
+        if (isAuthPage || isSplash || (lockState == LockState.unlocked && location == '/lock')) return '/home';
         return null;
       }
 
@@ -37,51 +45,59 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/splash',
-        builder: (_, __) => const SplashScreen(),
+        builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
         path: '/login',
-        builder: (_, __) => const LoginScreen(),
+        builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: '/register',
-        builder: (_, __) => const RegisterScreen(),
+        builder: (context, state) => const RegisterScreen(),
       ),
       GoRoute(
         path: '/home',
-        builder: (_, __) => const HomeScreen(),
+        builder: (context, state) => const HomeScreen(),
       ),
       GoRoute(
         path: '/create-couple',
-        builder: (_, __) => const CreateCoupleScreen(),
+        builder: (context, state) => const CreateCoupleScreen(),
       ),
       GoRoute(
         path: '/join-couple',
-        builder: (_, __) => const JoinCoupleScreen(),
+        builder: (context, state) => const JoinCoupleScreen(),
       ),
       GoRoute(
         path: '/journal/create',
-        builder: (_, __) => const CreateEntryScreen(),
+        builder: (context, state) => const CreateEntryScreen(),
       ),
       GoRoute(
         path: '/memories/create',
-        builder: (_, __) => const CreateMemoryScreen(),
+        builder: (context, state) => const CreateMemoryScreen(),
       ),
       GoRoute(
         path: '/memory/:id',
-        builder: (_, state) => MemoryDetailScreen(
+        builder: (context, state) => MemoryDetailScreen(
           id: state.pathParameters['id']!,
         ),
       ),
       GoRoute(
         path: '/future-letters/create',
-        builder: (_, __) => const CreateFutureLetterScreen(),
+        builder: (context, state) => const CreateFutureLetterScreen(),
       ),
       GoRoute(
         path: '/future-letter/:id',
-        builder: (_, state) => LetterDetailScreen(
+        builder: (context, state) => LetterDetailScreen(
           id: state.pathParameters['id']!,
         ),
+      ),
+      GoRoute(
+        path: '/lock',
+        builder: (context, state) => const LockScreen(),
+      ),
+      GoRoute(
+        path: '/settings/security',
+        builder: (context, state) => const SecuritySettingsScreen(),
       ),
     ],
   );

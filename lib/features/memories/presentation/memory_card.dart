@@ -36,7 +36,7 @@ class MemoryCard extends StatelessWidget {
                   width: double.infinity,
                   height: 220,
                   fit: BoxFit.cover,
-                  loadingBuilder: (_, child, progress) {
+                  loadingBuilder: (context, child, progress) {
                     if (progress == null) return child;
                     return Container(
                       color: AppColors.surface,
@@ -45,7 +45,7 @@ class MemoryCard extends StatelessWidget {
                       ),
                     );
                   },
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (context, error, stackTrace) => Container(
                     color: AppColors.surface,
                     child: const Icon(Icons.broken_image,
                         color: AppColors.textSecondary),

@@ -40,7 +40,7 @@ class LetterDetailScreen extends ConsumerWidget {
         appBar: AppBar(),
         body: const Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) => Scaffold(
+      error: (error, stackTrace) => Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(),
         body: Center(child: Text('Error', style: TextStyle(color: gold))),

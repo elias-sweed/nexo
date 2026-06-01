@@ -26,11 +26,11 @@ class JournalScreen extends ConsumerWidget {
           return ListView.builder(
             padding: const EdgeInsets.only(top: 16, bottom: 88),
             itemCount: entries.length,
-            itemBuilder: (_, i) => JournalCard(entry: entries[i]),
+            itemBuilder: (context, i) => JournalCard(entry: entries[i]),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => Center(
+        error: (error, stackTrace) => Center(
           child: Text(
             'Error al cargar el diario',
             style: TextStyle(color: gold),

@@ -37,7 +37,7 @@ class FutureLettersScreen extends ConsumerWidget {
                 ),
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
-                    (_, i) => FutureLetterCard(
+                    (context, i) => FutureLetterCard(
                       letter: unlocked[i],
                       onTap: () => context.push('/future-letter/${unlocked[i].id}'),
                     ),
@@ -56,7 +56,7 @@ class FutureLettersScreen extends ConsumerWidget {
                 ),
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
-                    (_, i) => FutureLetterCard(
+                    (context, i) => FutureLetterCard(
                       letter: locked[i],
                       onTap: () => context.push('/future-letter/${locked[i].id}'),
                     ),
@@ -69,7 +69,7 @@ class FutureLettersScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => Center(
+        error: (error, stackTrace) => Center(
           child: Text('Error al cargar cartas', style: TextStyle(color: gold)),
         ),
       ),

@@ -38,6 +38,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         title: Text(user?.displayName ?? 'NEXO'),
         actions: [
           IconButton(
+            icon: Icon(Icons.settings, color: gold),
+            onPressed: () => context.push('/settings/security'),
+          ),
+          IconButton(
             icon: Icon(Icons.logout, color: gold),
             onPressed: () {
               showDialog(
@@ -142,11 +146,11 @@ class _VinculoTab extends ConsumerWidget {
             return _NoCoupleView(gold: gold);
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, __) => const Center(child: Text('Error')),
+          error: (error, stackTrace) => const Center(child: Text('Error')),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => const Center(child: Text('Error')),
+      error: (error, stackTrace) => const Center(child: Text('Error')),
     );
   }
 }

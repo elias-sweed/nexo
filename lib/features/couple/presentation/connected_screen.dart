@@ -88,7 +88,7 @@ class _ConnectedScreenState extends ConsumerState<ConnectedScreen> {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => const Center(
+      error: (error, stackTrace) => const Center(
         child: Text('Error al cargar vínculo'),
       ),
     );

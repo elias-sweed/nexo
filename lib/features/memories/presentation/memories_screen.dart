@@ -24,14 +24,14 @@ class MemoriesScreen extends ConsumerWidget {
           return ListView.builder(
             padding: const EdgeInsets.only(top: 8, bottom: 88),
             itemCount: memories.length,
-            itemBuilder: (_, i) => MemoryCard(
+            itemBuilder: (context, i) => MemoryCard(
               memory: memories[i],
               onTap: () => context.push('/memory/${memories[i].id}'),
             ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => Center(
+        error: (error, stackTrace) => Center(
           child: Text(
             'Error al cargar recuerdos',
             style: TextStyle(color: gold),

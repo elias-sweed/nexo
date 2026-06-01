@@ -38,11 +38,11 @@ class MemoryDetailScreen extends ConsumerWidget {
                     width: double.infinity,
                     height: 300,
                     fit: BoxFit.cover,
-                    loadingBuilder: (_, child, progress) {
+                    loadingBuilder: (context, child, progress) {
                       if (progress == null) return child;
                       return Container(color: AppColors.surface);
                     },
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (context, error, stackTrace) => Container(
                       color: AppColors.surface,
                       child: const Icon(Icons.broken_image,
                           color: AppColors.textSecondary, size: 48),
@@ -109,7 +109,7 @@ class MemoryDetailScreen extends ConsumerWidget {
         backgroundColor: AppColors.background,
         body: const Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) => Scaffold(
+      error: (error, stackTrace) => Scaffold(
         backgroundColor: AppColors.background,
         body: Center(
           child: Text('Error al cargar el recuerdo',
