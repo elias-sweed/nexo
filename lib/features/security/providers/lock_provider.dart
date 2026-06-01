@@ -6,6 +6,13 @@ enum LockState { unlocked, locked }
 class LockNotifier extends Notifier<LockState> {
   @override
   LockState build() {
+    ref.listen(securitySettingsProvider, (prev, next) {
+      final wasEnabled = prev?.value?.biometricEnabled ?? false;
+      final isEnabled = next.value?.biometricEnabled ?? false;
+      if (isEnabled && !wasEnabled) {
+        state = LockState.locked;
+      }
+    });
     return LockState.unlocked;
   }
 
@@ -19,8 +26,8 @@ class LockNotifier extends Notifier<LockState> {
 
   void onAppResumed() {
     final settings = ref.read(securitySettingsProvider).value;
-    if (settings != null && settings.biometricEnabled) {
-      lock();
+    if (settings?.biometricEnabled == true) {
+      state = LockState.locked;
     }
   }
 }
