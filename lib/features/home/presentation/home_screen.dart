@@ -4,13 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:nexo/core/theme/app_colors.dart';
 import 'package:nexo/core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../couple/presentation/connected_screen.dart';
 import '../../couple/presentation/pending_screen.dart';
 import '../../couple/providers/couple_provider.dart';
 import '../../journal/presentation/journal_screen.dart';
 import '../../memories/presentation/memories_screen.dart';
 import '../../future_letters/presentation/future_letters_screen.dart';
-import '../../future_letters/providers/future_letter_provider.dart';
+import '../../dashboard/presentation/dashboard_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -32,10 +31,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final user = authState.user;
     final gold = Theme.of(context).extension<AppThemeExtension>()!.gold;
 
+    String capitalize(String s) => s.isEmpty ? '' : '${s[0].toUpperCase()}${s.substring(1)}';
+    final displayName = user != null ? capitalize(user.email.split('@').first) : 'NEXO';
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(user?.displayName ?? 'NEXO'),
+        title: Text(displayName),
         actions: [
           IconButton(
             icon: Icon(Icons.settings, color: gold),
@@ -88,7 +90,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite_border),
             activeIcon: Icon(Icons.favorite),
-            label: 'Vínculo',
+            label: 'Dashboard',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.book_outlined),
@@ -118,27 +120,13 @@ class _VinculoTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final coupleAsync = ref.watch(currentCoupleProvider);
     final pendingAsync = ref.watch(pendingCodeProvider);
-    final summary = ref.watch(futureLettersSummaryProvider);
     final gold = Theme.of(context).extension<AppThemeExtension>()!.gold;
 
     return coupleAsync.when(
       data: (couple) {
         if (couple != null) {
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: 16),
-                const SizedBox(
-                  height: 300,
-                  child: ConnectedScreen(),
-                ),
-                if (summary.total > 0) ...[
-                  const SizedBox(height: 8),
-                  _LettersSummary(summary: summary, gold: gold),
-                ],
-              ],
-            ),
-          );
+          // Si hay pareja, mostramos el Dashboard Emocional
+          return const DashboardScreen();
         }
         return pendingAsync.when(
           data: (code) {
@@ -151,67 +139,6 @@ class _VinculoTab extends ConsumerWidget {
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) => const Center(child: Text('Error')),
-    );
-  }
-}
-
-class _LettersSummary extends ConsumerWidget {
-  final FutureLettersSummary summary;
-  final Color gold;
-
-  const _LettersSummary({required this.summary, required this.gold});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
-      onTap: () {
-        // Switch to cartas tab - use the parent state
-        final homeState = context.findAncestorStateOfType<_HomeScreenState>();
-        homeState?.switchToTab(3);
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          children: [
-            Stack(
-              children: [
-                Icon(Icons.mail_outline, size: 32, color: gold),
-                if (summary.hasReady)
-                  Positioned(
-                    right: 0,
-                    child: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                summary.hasReady
-                    ? '${summary.unlocked} carta${summary.unlocked > 1 ? 's' : ''} lista${summary.unlocked > 1 ? 's' : ''} para abrir'
-                    : 'Tienen ${summary.locked} carta${summary.locked > 1 ? 's' : ''} esperando el futuro',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: gold,
-                      fontSize: 14,
-                    ),
-              ),
-            ),
-            Icon(Icons.chevron_right, color: gold),
-          ],
-        ),
-      ),
     );
   }
 }

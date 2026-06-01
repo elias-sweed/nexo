@@ -25,14 +25,13 @@ class _LockScreenState extends ConsumerState<LockScreen> with SingleTickerProvid
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
-    
+
     _animation = Tween<double>(begin: 0.95, end: 1.05).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
-    // Initial auth attempt
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _authenticate();
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) _authenticate();
     });
   }
 
@@ -44,26 +43,27 @@ class _LockScreenState extends ConsumerState<LockScreen> with SingleTickerProvid
 
   Future<void> _authenticate() async {
     if (_isAuthenticating) return;
-    
+
     setState(() {
       _isAuthenticating = true;
       _authFailed = false;
     });
 
+    ref.read(lockStateProvider.notifier).setAuthenticating(true);
+
     final biometricService = ref.read(biometricServiceProvider);
     final success = await biometricService.authenticate();
-    
+
     if (!mounted) return;
-    
+
+    ref.read(lockStateProvider.notifier).setAuthenticating(false);
+
     setState(() {
       _isAuthenticating = false;
     });
 
     if (success) {
       ref.read(lockStateProvider.notifier).unlock();
-      // GoRouter redirect handles navigation away when state changes to unlocked.
-      // We might need to force a refresh if the router depends on it, but the redirect
-      // is based on lockStateProvider in app_router.dart.
     } else {
       setState(() {
         _authFailed = true;
@@ -83,7 +83,6 @@ class _LockScreenState extends ConsumerState<LockScreen> with SingleTickerProvid
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(),
-              // Pulsing Logo
               ScaleTransition(
                 scale: _animation,
                 child: Image.asset(
@@ -113,7 +112,7 @@ class _LockScreenState extends ConsumerState<LockScreen> with SingleTickerProvid
                 ),
               ),
               const Spacer(),
-              
+
               if (_authFailed) ...[
                 Text(
                   'No se pudo verificar la identidad',
@@ -121,18 +120,18 @@ class _LockScreenState extends ConsumerState<LockScreen> with SingleTickerProvid
                 ),
                 const SizedBox(height: 16),
               ],
-              
+
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 48.0, vertical: 32.0),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: _isAuthenticating ? null : _authenticate,
-                    icon: _isAuthenticating 
+                    icon: _isAuthenticating
                         ? const SizedBox(
-                            width: 20, 
-                            height: 20, 
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
                         : const Icon(Icons.fingerprint, size: 24),
                     label: Text(_isAuthenticating ? 'Verificando...' : 'Desbloquear'),

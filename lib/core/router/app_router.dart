@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/presentation/splash_screen.dart';
@@ -16,26 +17,49 @@ import '../../features/security/presentation/lock_screen.dart';
 import '../../features/security/presentation/security_settings_screen.dart';
 import '../../features/security/providers/lock_provider.dart';
 
-final goRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-  final lockState = ref.watch(lockStateProvider);
+class _GoRouterNotifier extends ChangeNotifier {
+  AuthState? authState;
+  LockState lockState = LockState.unlocked;
 
-  return GoRouter(
+  void updateAuth(AuthState state) {
+    authState = state;
+    notifyListeners();
+  }
+
+  void updateLock(LockState state) {
+    lockState = state;
+    notifyListeners();
+  }
+}
+
+final goRouterProvider = Provider<GoRouter>((ref) {
+  final notifier = _GoRouterNotifier();
+
+  ref.listen(authStateProvider, (_, next) => notifier.updateAuth(next));
+  ref.listen(lockStateProvider, (_, next) => notifier.updateLock(next));
+
+  notifier.authState = ref.read(authStateProvider);
+
+  final router = GoRouter(
+    refreshListenable: notifier,
     initialLocation: '/splash',
     redirect: (context, state) {
+      final authState = notifier.authState;
+      final lockState = notifier.lockState;
       final location = state.matchedLocation;
 
-      if (authState.status == AuthStatus.initial) return null;
+      if (authState == null || authState.status == AuthStatus.initial) return null;
 
       final isAuthPage = location == '/login' || location == '/register';
       final isSplash = location == '/splash';
-      
+
       if (authState.isAuthenticated) {
-        if (lockState == LockState.locked && location != '/lock') {
-          return '/lock';
+        if (lockState == LockState.locked) {
+          if (location != '/lock') return '/lock';
+          return null;
         }
-        
-        if (isAuthPage || isSplash || (lockState == LockState.unlocked && location == '/lock')) return '/home';
+
+        if (isAuthPage || isSplash || location == '/lock') return '/home';
         return null;
       }
 
@@ -101,4 +125,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+
+  ref.onDispose(() {
+    notifier.dispose();
+    router.dispose();
+  });
+
+  return router;
 });

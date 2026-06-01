@@ -1,19 +1,27 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../auth/providers/auth_provider.dart';
 import 'security_provider.dart';
 
 enum LockState { unlocked, locked }
 
 class LockNotifier extends Notifier<LockState> {
+  bool _isAuthenticating = false;
+
   @override
   LockState build() {
-    ref.listen(securitySettingsProvider, (prev, next) {
-      final wasEnabled = prev?.value?.biometricEnabled ?? false;
-      final isEnabled = next.value?.biometricEnabled ?? false;
-      if (isEnabled && !wasEnabled) {
-        state = LockState.locked;
-      }
-    });
     return LockState.unlocked;
+  }
+
+  void setAuthenticating(bool value) {
+    if (value) {
+      _isAuthenticating = true;
+    } else {
+      // Small delay before clearing the flag to avoid race conditions 
+      // with OS lifecycle events (like 'resumed' firing just after auth completes)
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        _isAuthenticating = false;
+      });
+    }
   }
 
   void lock() {
@@ -25,9 +33,25 @@ class LockNotifier extends Notifier<LockState> {
   }
 
   void onAppResumed() {
+    if (_isAuthenticating) return;
+
+    final authState = ref.read(authStateProvider);
+    if (authState.status != AuthStatus.authenticated) return;
+
     final settings = ref.read(securitySettingsProvider).value;
-    if (settings?.biometricEnabled == true) {
-      state = LockState.locked;
+    if (settings != null && settings.biometricEnabled) {
+      lock();
+    }
+  }
+  void onAppBackgrounded() {
+    if (_isAuthenticating) return;
+
+    final authState = ref.read(authStateProvider);
+    if (authState.status != AuthStatus.authenticated) return;
+
+    final settings = ref.read(securitySettingsProvider).value;
+    if (settings != null && settings.biometricEnabled) {
+      lock();
     }
   }
 }

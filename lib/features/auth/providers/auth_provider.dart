@@ -35,8 +35,13 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 });
 
 class AuthNotifier extends Notifier<AuthState> {
+  bool _isSessionRestore = false;
+
+  bool get isSessionRestore => _isSessionRestore;
+
   @override
   AuthState build() {
+    _isSessionRestore = false;
     _checkSession();
     return const AuthState();
   }
@@ -46,6 +51,7 @@ class AuthNotifier extends Notifier<AuthState> {
       final authRepository = ref.read(authRepositoryProvider);
       final user = await authRepository.getCurrentUser();
       if (user != null) {
+        _isSessionRestore = true;
         state = state.copyWith(
           status: AuthStatus.authenticated,
           user: user,
@@ -60,6 +66,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> signIn(String email, String password) async {
     try {
+      _isSessionRestore = false;
       state = state.copyWith(error: null);
       final authRepository = ref.read(authRepositoryProvider);
       final user = await authRepository.signIn(
@@ -77,6 +84,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> signUp(String email, String password, String name) async {
     try {
+      _isSessionRestore = false;
       state = state.copyWith(error: null);
       final authRepository = ref.read(authRepositoryProvider);
       final user = await authRepository.signUp(
