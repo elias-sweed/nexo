@@ -9,6 +9,8 @@ import '../../couple/presentation/pending_screen.dart';
 import '../../couple/providers/couple_provider.dart';
 import '../../journal/presentation/journal_screen.dart';
 import '../../memories/presentation/memories_screen.dart';
+import '../../future_letters/presentation/future_letters_screen.dart';
+import '../../future_letters/providers/future_letter_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -19,6 +21,10 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _currentIndex = 0;
+
+  void switchToTab(int index) {
+    setState(() => _currentIndex = index);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +71,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _VinculoTab(),
           _JournalTab(),
           _MemoriesTab(),
+          _FutureLettersTab(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -89,6 +96,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             activeIcon: Icon(Icons.photo_library),
             label: 'Recuerdos',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.mail_outline),
+            activeIcon: Icon(Icons.mail),
+            label: 'Cartas',
+          ),
         ],
       ),
     );
@@ -102,11 +114,28 @@ class _VinculoTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final coupleAsync = ref.watch(currentCoupleProvider);
     final pendingAsync = ref.watch(pendingCodeProvider);
+    final summary = ref.watch(futureLettersSummaryProvider);
     final gold = Theme.of(context).extension<AppThemeExtension>()!.gold;
 
     return coupleAsync.when(
       data: (couple) {
-        if (couple != null) return const ConnectedScreen();
+        if (couple != null) {
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
+                const SizedBox(
+                  height: 300,
+                  child: ConnectedScreen(),
+                ),
+                if (summary.total > 0) ...[
+                  const SizedBox(height: 8),
+                  _LettersSummary(summary: summary, gold: gold),
+                ],
+              ],
+            ),
+          );
+        }
         return pendingAsync.when(
           data: (code) {
             if (code != null) return PendingScreen(inviteCode: code);
@@ -118,6 +147,67 @@ class _VinculoTab extends ConsumerWidget {
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, __) => const Center(child: Text('Error')),
+    );
+  }
+}
+
+class _LettersSummary extends ConsumerWidget {
+  final FutureLettersSummary summary;
+  final Color gold;
+
+  const _LettersSummary({required this.summary, required this.gold});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onTap: () {
+        // Switch to cartas tab - use the parent state
+        final homeState = context.findAncestorStateOfType<_HomeScreenState>();
+        homeState?.switchToTab(3);
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Stack(
+              children: [
+                Icon(Icons.mail_outline, size: 32, color: gold),
+                if (summary.hasReady)
+                  Positioned(
+                    right: 0,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                summary.hasReady
+                    ? '${summary.unlocked} carta${summary.unlocked > 1 ? 's' : ''} lista${summary.unlocked > 1 ? 's' : ''} para abrir'
+                    : 'Tienen ${summary.locked} carta${summary.locked > 1 ? 's' : ''} esperando el futuro',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: gold,
+                      fontSize: 14,
+                    ),
+              ),
+            ),
+            Icon(Icons.chevron_right, color: gold),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -199,6 +289,46 @@ class _MemoriesTab extends ConsumerWidget {
     }
 
     return const MemoriesScreen();
+  }
+}
+
+class _FutureLettersTab extends ConsumerWidget {
+  const _FutureLettersTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final couple = ref.watch(currentCoupleProvider).value;
+    final gold = Theme.of(context).extension<AppThemeExtension>()!.gold;
+
+    if (couple == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.mail_outline, size: 72, color: gold),
+              const SizedBox(height: 24),
+              Text(
+                'Primero conecta con tu pareja',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontSize: 20,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Ve a la pestaña Vínculo para crear o unirte a un vínculo',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return const FutureLettersScreen();
   }
 }
 

@@ -9,6 +9,8 @@ import '../../features/couple/presentation/join_couple_screen.dart';
 import '../../features/journal/presentation/create_entry_screen.dart';
 import '../../features/memories/presentation/create_memory_screen.dart';
 import '../../features/memories/presentation/memory_detail_screen.dart';
+import '../../features/future_letters/presentation/create_future_letter_screen.dart';
+import '../../features/future_letters/presentation/letter_detail_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -68,6 +70,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/memory/:id',
         builder: (_, state) => MemoryDetailScreen(
+          id: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: '/future-letters/create',
+        builder: (_, __) => const CreateFutureLetterScreen(),
+      ),
+      GoRoute(
+        path: '/future-letter/:id',
+        builder: (_, state) => LetterDetailScreen(
           id: state.pathParameters['id']!,
         ),
       ),
